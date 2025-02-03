@@ -1,0 +1,41 @@
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: poc-wm-msr
+  namespace: webmethods
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    haproxy.router.openshift.io/rewrite-target: /
+spec:
+  rules:
+    - host: wm-msr.apps-crc.testing
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: poc-wm-msr
+                port:
+                  number: 5555
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: poc-wm-gw
+  namespace: webmethods
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    haproxy.router.openshift.io/rewrite-target: /
+spec:
+  rules:
+    - host: wm-gw.apps-crc.testing
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: poc-wm-apigw
+                port:
+                  number: 9072
