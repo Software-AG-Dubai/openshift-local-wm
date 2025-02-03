@@ -88,6 +88,10 @@ docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/e
         "insecure-registries" : [ "default-route-openshift-image-registry.apps-crc.testing:443" ]
     }
     ```
+* Connecting to SSH 
+    ``` shell
+    ssh -i ~/.crc/machines/crc/id_ed25519 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -p 2222 core@127.0.0.1
+    ```
 <!-- -------------------
 eval $(crc oc-env)
 oc new-project webmethods 
