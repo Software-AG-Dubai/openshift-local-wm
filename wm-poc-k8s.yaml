@@ -180,7 +180,7 @@ spec:
           #     name: license
           resources:
             limits:
-              memory: "2Gi"
+              memory: "3Gi"
               # cpu: "2"
       # volumes:
       #   - name: license
