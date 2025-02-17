@@ -21,9 +21,14 @@
 2. Login to OpenShift Local Embedded Image Registry
     ``` shell
     docker login -u kubeadmin -p $(oc whoami -t) default-route-openshift-image-registry.apps-crc.testing
+    podman login  --tls-verify=false -u kubeadmin -p $(oc whoami -t) default-route-openshift-image-registry.apps-crc.testing
     ```
 3. Add `default-route-openshift-image-registry.apps-crc.testing` as an insecure registry to your docker daemon. PORT is `443` if required
     1. For Docker Desktop on Mac [here](https://stackoverflow.com/a/74856653) and add registry certificate to trusted cert store as mentioned [here](https://docs.docker.com/engine/network/ca-certs/#macos) 
+    2. For Podman Desktop 
+        1. `podman machine ssh -- 'echo "192.168.127.254 default-route-openshift-image-registry.apps-crc.testing" | sudo tee -a  /etc/hosts'` [ref](https://github.com/crc-org/crc/issues/3897#issuecomment-1882629521)
+        2. `podman machine ssh -- "cd /etc/pki/ca-trust/source/anchors && openssl s_client -showcerts -connect default-route-openshift-image-registry.apps-crc.testing:443 </dev/null 2>/dev/null | openssl x509 -outform PEM > openshift.pem && update-ca-trust"`
+        3. `podman machine stop && podman machine start`
 
 ### Pull and Push wM images
 * If not previously logged in to IBM Registry [cp.icr.io]() 
