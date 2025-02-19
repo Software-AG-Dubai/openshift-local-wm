@@ -1,0 +1,45 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: argocd-namespace-admin
+  namespace: webmethods  
+rules:
+- apiGroups: ["*"]  # Includes all API groups (core, apps, batch, etc.)
+  resources: ["*"]  # Allows managing all resources
+  verbs: ["*"]  # Grants full permissions (create, get, update, delete, list, etc.)
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: argocd-namespace-admin-binding
+  namespace: webmethods
+subjects:
+- kind: ServiceAccount
+  name: openshift-gitops-argocd-application-controller
+  namespace: openshift-gitops  # The namespace where ArgoCD runs
+roleRef:
+  kind: Role
+  name: argocd-namespace-admin
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: argocd-scc-manager
+rules:
+- apiGroups: ["security.openshift.io"]
+  resources: ["securitycontextconstraints"]
+  verbs: ["*"]  # Grants full control (create, get, update, delete, list, etc.)
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: argocd-scc-manager-binding
+subjects:
+- kind: ServiceAccount
+  name: openshift-gitops-argocd-application-controller
+  namespace: openshift-gitops  # The namespace where ArgoCD runs
+roleRef:
+  kind: ClusterRole
+  name: argocd-scc-manager
+  apiGroup: rbac.authorization.k8s.io

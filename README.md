@@ -5,8 +5,9 @@
 3. Follow installation steps  
 5. (Optional) Increase memory and disk 
     ``` shell
-    crc config set memory 16384
+    crc config set memory 20480
     crc config set disk-size 50
+    crc config set cpus 6
     # crc config set nameserver 8.8.8.8
     ```
 4. Run `crc setup` and point to pull secret location
@@ -27,7 +28,7 @@
     1. For Docker Desktop on Mac [here](https://stackoverflow.com/a/74856653) and add registry certificate to trusted cert store as mentioned [here](https://docs.docker.com/engine/network/ca-certs/#macos) 
     2. For Podman Desktop 
         1. `podman machine ssh -- 'echo "192.168.127.254 default-route-openshift-image-registry.apps-crc.testing" | sudo tee -a  /etc/hosts'` [ref](https://github.com/crc-org/crc/issues/3897#issuecomment-1882629521)
-        2. `podman machine ssh -- "cd /etc/pki/ca-trust/source/anchors && openssl s_client -showcerts -connect default-route-openshift-image-registry.apps-crc.testing:443 </dev/null 2>/dev/null | openssl x509 -outform PEM > openshift.pem && update-ca-trust"`
+        2. `podman machine ssh -- 'echo -e "\n[[registry]]\nlocation = \"default-route-openshift-image-registry.apps-crc.testing\"\ninsecure = true" | sudo tee -a /etc/containers/registries.conf'`
         3. `podman machine stop && podman machine start`
 
 ### Pull and Push wM images
@@ -63,8 +64,8 @@ docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/e
 ## Deploy K8s YAML
 1. Run the following commands
     ```shell
-    kubectl apply -f wm-poc-k8s.yaml 
-    kubectl apply -f wm-poc-k8s-ingress.yaml 
+    kubectl apply -f app/wm-poc-k8s.yaml 
+    kubectl apply -f app/wm-poc-k8s-ingress.yaml 
     ```
 2. Add the following to hosts file. For Unix Like `/etc/hosts`
     ```
@@ -132,4 +133,7 @@ vi /etc/containers/registries.conf
 [[registry]]
 location = "default-route-openshift-image-registry.apps-crc.testing"
 insecure = true
+
+
+`podman machine ssh -- "cd /etc/pki/ca-trust/source/anchors && openssl s_client -showcerts -connect default-route-openshift-image-registry.apps-crc.testing:443 </dev/null 2>/dev/null | openssl x509 -outform PEM > openshift.pem && update-ca-trust"`
  -->
