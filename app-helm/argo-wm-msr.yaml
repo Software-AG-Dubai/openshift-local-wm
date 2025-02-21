@@ -2,11 +2,11 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: argo-wm-msr
-  namespace: webmethods
+  namespace: openshift-gitops
 spec:
   project: myproject
   source:
-    chart: webmethods/microservicesruntime
+    chart: microservicesruntime
     repoURL: https://ibm.github.io/webmethods-helm-charts/charts
     targetRevision: 1.0.7
     helm:
