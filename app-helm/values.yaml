@@ -192,7 +192,7 @@ serviceAccount:
 podAnnotations: {}
 
 podSecurityContext:
-  fsGroup: 1724
+  # fsGroup: 1724
 
 securityContext: {}
   # capabilities:

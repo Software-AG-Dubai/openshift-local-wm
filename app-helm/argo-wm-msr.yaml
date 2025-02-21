@@ -5,14 +5,17 @@ metadata:
   namespace: openshift-gitops
 spec:
   project: myproject
-  source:
-    chart: microservicesruntime
-    repoURL: https://ibm.github.io/webmethods-helm-charts/charts
-    targetRevision: 1.0.7
-    helm:
-      releaseName: wm-msr
-      valueFiles:
-        - values.yaml
+  sources:
+    - chart: microservicesruntime
+      repoURL: https://ibm.github.io/webmethods-helm-charts/charts
+      targetRevision: 1.0.7
+      helm:
+        releaseName: wm-msr
+        valueFiles:
+          - $values/app-helm/values.yaml
+    - repoURL: 'https://github.com/Software-AG-Dubai/openshift-local-wm.git'
+      targetRevision: main
+      ref: values
   destination:
     server: "https://kubernetes.default.svc"
     namespace: webmethods
