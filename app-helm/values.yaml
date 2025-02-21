@@ -1,0 +1,371 @@
+# Default values for microservicesruntime.
+
+# -- Number of replicates in Deployment
+replicaCount: 1
+
+# -- StatefulSet or Deployment. You should only change this if you require Client Side queuing (CSQ) or functionality in IS which requires stable hostnames and filesystems. Default is false => Deployment. Keep in mind, you must disable CSQ on each webMethods messaging and JMS connection if you don't use stateful-sets. See examples in Process Engine deployment for disableing CSQ.
+statefulSet: false
+
+image:
+  # -- Pull this image. Default is MSR from [IBM webMethods Container Registry](https://containers.webmethods.io)
+  repository: "sagcr.azurecr.io/webmethods-microservicesruntime"
+  # -- Pull with policy
+  pullPolicy: IfNotPresent
+  # -- The default value pulls latest. In PROD it is recommended to use a specific fix level.
+  tag:        "10.15"
+
+# -- Image pull secret reference. By default looks for `regcred`.
+imagePullSecrets: 
+  - name: regcred
+
+# -- Overwrites Chart name of release name in workload name. As default, the workload name is release name + '-' + Chart name. The workload name is at the end release name + '-' + value of `nameOverride`.
+nameOverride: ""
+# -- Overwrites full workload name. As default, the workload name is release name + '-' + Chart name.
+fullnameOverride: ""
+
+# -- The name of the main container, by default this will be msr-<release_name>
+containerName: 
+
+# -- Extra Labels
+extraLabels: {}
+
+# -- Extra volumes that should be mounted.
+# - name: extras
+#   emptyDir: {}
+extraVolumes: []
+
+# -- Extra environment properties to be passed on to the Microservices Runtime
+#  - name: extraEnvironmentVariable
+#    value: "myvalue"
+extraEnvs: []
+
+# -- Extra Ports to be defined, note: these ports need to be created 
+extraPorts: []
+
+# -- Secret mounts, A list of secrets and their paths to mount inside the pod
+secretMounts: []
+#  - name: default-secrets
+#    secretName: elastic-certificates
+#    path: /usr/share/elasticsearch/config/certs
+#    defaultMode: 0755
+
+# -- Secret volumes, A list of secrets
+secretVolumes: []
+# - name: msr-secrets
+#   secretName: msr-secrets
+
+# -- Extra volume mounts
+extraVolumeMounts: []
+# - name: extras
+#   mountPath: /usr/share/extras
+#   readOnly: true
+
+# -- Volume Claim Templates, only to be used when running as a Statefulset (e.g. using client-side queuing)
+volumeClaimTemplates: []
+#    - metadata:
+#        name: my-volume
+#      spec:
+#        accessModes:
+#          - ReadWriteOnce
+#        resources:
+#          requests:
+#            storage: 1Gi
+
+# -- Extra containers which should run in addtion to the main container as a sidecar
+# - name: do-something
+#   image: busybox
+#   command: ['do', 'something']
+extraContainers: []
+
+# -- Extra init containers that are executed before starting the main container
+# - name: do-something
+#   image: busybox
+#   command: ['do', 'something']
+extraInitContainers: []
+
+# -- Extra config maps for addtional configurations such as extra ports, etc.
+extraConfigMaps: []
+
+# -- Extra command, which is executed before the startContainer entrypoint script of the Microservice Runtime
+extraCommand: ""
+
+# -- lifecycle hooks to execute on preStop / postStart,...
+lifecycle: {}
+# preStop:
+#   exec:
+#     command: ["/bin/sh", "-c", "echo Hello from the postStart handler > /usr/share/message"]
+# postStart:
+#   exec:
+#     command:
+#       - bash
+#       - -c
+#       - |
+#         #!/bin/bash
+#         # Sync PDTs at startup
+#         IS_URL=http://localhost:5555
+#         curl -XGET "$IS_URL/invoke/pub.publish:syncToProvider"
+
+# -- startup probe for container
+startupProbe:
+  tcpSocket:
+    port: http
+  failureThreshold: 60
+  periodSeconds: 30            # wait 10 * 60 seconds for starting readinessProbe and livenessProbe
+
+# -- Configure liveness probe
+livenessProbe:
+  httpGet:
+    path: /health/liveness
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 15
+  timeoutSeconds: 30
+  successThreshold: 1
+  failureThreshold: 3
+
+# -- Configure readiness probe
+readinessProbe:
+  httpGet:
+    path: /health/readiness
+    port: http
+  initialDelaySeconds: 0
+  periodSeconds: 15
+  timeoutSeconds: 30
+  successThreshold: 1
+  failureThreshold: 3
+
+microservicesruntime:
+  # -- Defines external runtime port
+  httpsPort:                5556
+  # -- Defines scheme of runtime port 
+  httpsPortScheme:          "HTTPS"
+  # -- Defines administration port
+  httpPort:                 5555
+  # -- Defines scheme of administration port
+  httpPortScheme:          "HTTP"
+  # -- Defies diagnostic port
+  diagnosticPort:           9999
+  
+  # -- Name of config map which contains the license key. If you ommit this, it defaults to the release name + microservicesruntime-license. 
+  licenseConfigMap:         "microservicesruntime-license-key"
+
+  # -- Controls wether a license key is provided or not. Set this to false if you intent to use a trial MSR image or an Image with a baked-in license file.
+  licenseKeyProvided: true
+
+  memoryHeap:
+    ## -- Minimum of allocated heap memory
+    min:                    "512M"
+    # -- Maximum of heap memory
+    max:                    "512M"
+
+  # -- Defines installation folder which was using on image creation
+  installDir:      /opt/softwareag/IntegrationServer # This is the installation directory which you use on creating the image
+  # -- List of application properties which are added into config map in YAML format. See [Integration Server Configuration Variables](https://documentation.softwareag.com/webmethods/integration_server/pie10-15/webhelp/pie-webhelp/index.html#page/pie-webhelp%2Fre-configuration_variables_assets.html)
+  properties: {}
+  # -- Use "flat" application properties file as generated by configuration variable templates. Note: "properties" takes precedence over the propertiesFile values. Template function, 
+  # you can reference other values using template syntax (e.g. using curly braces)
+  #  content: |
+  #    truststore.DEFAULT_JVM_TRUSTSTORE.ksPassword=$secret{TruststorePasswordSecretName}
+  #    property=value
+  #    anotherproperty=value
+  #    image={{ .Values.image.repository }} # referencing other values
+  propertiesFile: 
+    content: |
+      # application properties file 
+
+  # -- list of custom java opts e.g. "-Dmy.prop1=value1" "-Dmy.prop2=value2"
+  javaCustomOpts:
+  # example:   
+  #  - "-Dmy.prop1=value1"
+  #  - "-Xss265"
+
+serviceAccount:
+  # -- Specifies whether a service account should be created
+  create: false
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+# -- pod annotations
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1724
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 5555
+
+ingress:
+  enabled: true
+  defaultHostname: msr.mydomain.com
+  className: ""
+  annotations: {}
+  hosts:
+    # -- Hostname of Ingress. By default the defaultHostname is used. For more complex rules or addtional hosts, you will need to overwrite this section.
+    - host: ""
+      # --  Address the backend
+      paths:
+        # -- Path to address the backend
+        - path: /
+          # -- Path type to address the backend
+          pathType: Prefix
+          # -- Port of service
+          port: 5555
+  # -- TLS of Ingress
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  #
+  # msrContainer:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
+  # nginxContainer:
+  #   requests:
+  #     cpu: 500m
+  #     memory: 2Gi
+  #   limits:
+  #     # use a high cpu limit to avaoid the container being throttled
+  #     cpu: 8
+  #     memory: 4Gi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+# -- Set MSR and Nginx Pod (anti-) affinity. You can use templates inside because `tpl` function is called for rendering.
+affinity: {}
+
+# -- Set MSR and Nginx Pod topology spread constraints. You can use templates inside because `tpl` function is called for rendering.
+# ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints/#spread-constraints-for-pods 
+topologySpreadConstraints: {}
+
+# -- Set MSR and Nginx Pods' Priority Class Name
+# ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/
+priorityClassName: ""
+
+# -- Deploy Nginx as external LB
+externalLoadBalancer: false
+
+# Use persistent volume for IS packages, configuration settings and logs ...
+persistence:
+  # -- Use persistent volume for IS packages, configuration settings and logs. If `persistence.existingClaim` not set, a claim will be automatically created.
+  enabled:          false
+  storageClassName: ""
+  annotations:      {}
+  # -- Use this existing and already created PVC.
+  existingClaim:    ""
+  accessMode:       ReadWriteOnce
+  accessModes:      []
+  # -- Size of Persistent Volume Claim
+  size:             10M
+  # -- if persistence.enabled=true, externalize packages / use packages from persistent volume
+  packages:         true
+  # -- if persistence.enabled=true, write logs to persistent volume
+  logs:             true
+  # -- if persistence.enabled=true, use configuration settings from persistent volume
+  configs:          true
+
+metering:
+  # -- enable metering
+  enabled: true
+  # -- The URL of the metering aggregator server REST API.
+  serverUrl: "https://metering.softwareag.cloud/api/measurements"
+  # -- The type of the proxy that the metering client uses.
+  # Valid values are:
+  # *DIRECT (default).
+  # *HTTP
+  # *SOCKS
+  # Indicates that the metering client does not use a proxy.
+  proxyType: "DIRECT"
+  # -- The proxy address in a <host>:<port> format that the metering client uses.
+  # Configure this property only if you use a metering proxy.
+  proxyAddress:
+  # -- The proxy password that the metering client uses.
+  # Configure this property only if you use a metering proxy with authentication.
+  # Depending on the method that you use to provide a password, ensure that you escape password characters that are specific for the selected method.
+  # Valid characters:
+  # *Letters: A-Z, a-z
+  # *Numbers: 0-9
+  # *Special characters: !@#$%^&*()_+-=[]{}\/?,.<>;
+  proxyPass:
+  # -- The time in milliseconds to establish the initial TCP connection when the metering client calls the server REST endpoint. This is also the time to start the request.
+  serverConnectTimeout: "60000"
+  # -- The maximum time in milliseconds without data transfer over the TCP connection to the server. This is also the time that it takes for the server to respond. When this time passes, the request fails.
+  serverReadTimeout: "300000"
+  # -- The period in seconds for which data is accumulated before a log record is produced.
+  accumulationPeriod: "1800"
+  reportPeriod: "3600"
+  # -- An alias of the webMethods product instance or a group of instances, for which usage data is measured.
+  runtimeAlias:
+  # -- The level of log messages that are logged on the console.
+  # Valid values are:
+  # *error - logs only ERROR messages.
+  # *warn (default) - logs ERROR and WARN messages.
+  # *info - logs ERROR, WARN, and INFO messages.
+  # *debug - logs ERROR, WARN, INFO, and DEBUG messages. Use as a Java system property or an environment variable to see the debug messages of the configuration initialization.
+  logLevel:
+  # -- The absolute path to the metering client truststore that is used for HTTPS connections. Add this value in any of the following cases:
+  # *If you use the IBM webMethods Metering Server on premises (via HTTPS) and the certificates in the truststore do not match the certificates configured in IBM webMethods Runtime (CTP).
+  # *If you use a metering proxy that terminates the SSL connection to the Metering Server in IBM webMethods Cloud.
+  trustStoreFile:
+  # -- The password for the metering client truststore.
+  # Configure this property only if you use a truststore.
+  trustStorePassword:
+  # -- Configuration for secretKeyRef containing the password for the metering client truststore.
+  # Configure this property only if you use a truststore.
+  # Mutually exclusive with providing the password directly over metering.trustStorePassword.
+  trustStorePasswordFromSecret:
+    # -- enable secretKeyRef instead of providing password directly
+    enabled: false
+    # -- Name of the referenced secret
+    secretName: ""
+    # -- Key containing the truststore password in the referenced secret
+    secretKey: ""
+
+# -- Define values for Prometheus Operator to scrap metrics via annotation or ServiceMonitor.
+prometheus:
+  path:          "/metrics"
+  port:          "5555"
+  scheme:        "http"
+  ## -- Only used on annotation 
+  scrape:        "true"
+  ## -- Only used on ServiceMonitor
+  interval:      10s
+  ## -- Only used on ServiceMonitor
+  scrapeTimeout: 10s
+
+# -- Create and enable ServiceMonitor. The default is `false`.
+serviceMonitor:
+  enabled: false
+
+# -- Import the content as license key and create a ConfigMap named by `licenseConfigMap` value. You can copy/past the content of your provided license key file here.  
+license: |
