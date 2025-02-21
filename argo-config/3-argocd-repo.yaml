@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: webmethods-git
+  namespace: openshift-gitops
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  url: https://github.com/Software-AG-Dubai/openshift-local-wm.git
+  password: <REPLACE_PASSWORD>
+  username: mosehsah
+  project: myproject
+  type: git
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: webmethods-helm
+  namespace: openshift-gitops
+  labels:
+    argocd.argoproj.io/secret-type: repository
+stringData:
+  name: webmethods
+  url: https://ibm.github.io/webmethods-helm-charts/charts
+  type: helm
+  project: myproject

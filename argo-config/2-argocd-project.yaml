@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: myproject
+  namespace: openshift-gitops
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  destinations:
+  - name: in-cluster
+    namespace: webmethods
+    server: https://kubernetes.default.svc
+  - name: in-cluster
+    namespace: default
+    server: https://kubernetes.default.svc
+  sourceRepos:
+  - https://github.com/Software-AG-Dubai/openshift-local-wm.git
+  - https://ibm.github.io/webmethods-helm-charts/charts

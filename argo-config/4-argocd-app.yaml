@@ -1,0 +1,15 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: webmethods
+  namespace: openshift-gitops
+spec: 
+  project: myproject
+  source:
+    repoURL: https://github.com/Software-AG-Dubai/openshift-local-wm.git
+    path: ./app
+    targetRevision: main
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: webmethods
