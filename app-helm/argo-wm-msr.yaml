@@ -2,9 +2,9 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: argo-wm-msr
-  namespace: default
+  namespace: webmethods
 spec:
-  project: default
+  project: myproject
   source:
     chart: webmethods/microservicesruntime
     repoURL: https://ibm.github.io/webmethods-helm-charts/charts
@@ -15,4 +15,4 @@ spec:
         - values.yaml
   destination:
     server: "https://kubernetes.default.svc"
-    namespace: default
+    namespace: webmethods
