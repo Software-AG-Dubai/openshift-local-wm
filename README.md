@@ -65,7 +65,7 @@ docker pull docker.elastic.co/elasticsearch/elasticsearch:8.2.3
 docker tag docker.elastic.co/elasticsearch/elasticsearch:8.2.3 default-route-openshift-image-registry.apps-crc.testing/webmethods/elasticsearch:8.2.3
 docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/elasticsearch:8.2.3
 ```
-## Deploy using ArgoCD
+## <a name="argo"></a> Deploy using ArgoCD 
 1. Install Marketplace capability if not installed
     * Check `oc get clusterversion version -o jsonpath='{.spec.capabilities}{"\n"}{.status.capabilities}{"\n"}'`
     * Install `oc patch clusterversion/version --type merge -p '{"spec":{"capabilities":{"additionalEnabledCapabilities":["marketplace"]}}}'`
@@ -74,6 +74,11 @@ docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/e
 3. Give ArgoCD permissions on `webmethods` namespace(project) `kubectl apply argo-config/argocd-config.yaml`
 4. Get ArgoCD admin password `kubectl get secret openshift-gitops-cluster -n openshift-gitops -o jsonpath='{.data.admin\.password}' | base64 -d`
 5. Apply all configurations in the `argo-config` folder `kubectl apply -f argo-config/`
+
+## Deploy using ArgoCD and Helm from IBM [Chart Repo](https://github.com/IBM/webmethods-helm-charts)
+1. Follow steps [here](#argo)  till step 4
+2. `kubectl apply -f argo-config/1-argocd-config.yaml argo-config/2-argocd-project.yaml argo-config/3-argocd-repo.yaml` 
+3. `kubectl apply -f app-helm/service-account.yaml app-helm/argo-wm-msr.yaml`
 
 ## Deploy K8s YAML
 1. Run the following commands
