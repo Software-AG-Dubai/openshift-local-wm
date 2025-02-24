@@ -54,12 +54,26 @@ docker pull cp.icr.io/cp/webmethods/integration/webmethods-microservicesruntime:
 docker tag cp.icr.io/cp/webmethods/integration/webmethods-microservicesruntime:11.1.0.0 default-route-openshift-image-registry.apps-crc.testing/webmethods/webmethods-microservicesruntime:11.1.0.0
 docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/webmethods-microservicesruntime:11.1.0.0
 
+## MSR for helm
+docker pull sagcr.azurecr.io/webmethods-microservicesruntime:10.15
+docker tag sagcr.azurecr.io/webmethods-microservicesruntime:10.15 default-route-openshift-image-registry.apps-crc.testing/webmethods/webmethods-microservicesruntime:10.15
+docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/webmethods-microservicesruntime:10.15
+
 # Elasticsearch
 #docker pull docker.elastic.co/elasticsearch/elasticsearch:8.2.3 --platform linux/amd64
 docker pull docker.elastic.co/elasticsearch/elasticsearch:8.2.3 
 docker tag docker.elastic.co/elasticsearch/elasticsearch:8.2.3 default-route-openshift-image-registry.apps-crc.testing/webmethods/elasticsearch:8.2.3
 docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/elasticsearch:8.2.3
 ```
+## Deploy using ArgoCD
+1. Install Marketplace capability if not installed
+    * Check `oc get clusterversion version -o jsonpath='{.spec.capabilities}{"\n"}{.status.capabilities}{"\n"}'`
+    * Install `oc patch clusterversion/version --type merge -p '{"spec":{"capabilities":{"additionalEnabledCapabilities":["marketplace"]}}}'`
+    * You might need to restart the pods for changes to reflect `oc delete pods --all -n openshift-marketplace`
+2. Install GitOps Operator from Operator Hub (Default Installation)
+3. Give ArgoCD permissions on `webmethods` namespace(project) `kubectl apply argo-config/argocd-config.yaml`
+4. Get ArgoCD admin password `kubectl get secret openshift-gitops-cluster -n openshift-gitops -o jsonpath='{.data.admin\.password}' | base64 -d`
+5. Apply all configurations in the `argo-config` folder `kubectl apply -f argo-config/`
 
 ## Deploy K8s YAML
 1. Run the following commands
