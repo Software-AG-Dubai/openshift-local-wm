@@ -8,7 +8,7 @@ statefulSet: false
 
 image:
   # -- Pull this image. Default is MSR from [IBM webMethods Container Registry](https://containers.webmethods.io)
-  repository: "default-route-openshift-image-registry.apps-crc.testing/webmethods/"
+  repository: "default-route-openshift-image-registry.apps-crc.testing/webmethods"
   # -- Pull with policy
   pullPolicy: IfNotPresent
   # -- The default value pulls latest. In PROD it is recommended to use a specific fix level.
