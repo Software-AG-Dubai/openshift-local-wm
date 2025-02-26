@@ -71,12 +71,12 @@ docker push default-route-openshift-image-registry.apps-crc.testing/webmethods/e
     * Install `oc patch clusterversion/version --type merge -p '{"spec":{"capabilities":{"additionalEnabledCapabilities":["marketplace"]}}}'`
     * You might need to restart the pods for changes to reflect `oc delete pods --all -n openshift-marketplace`
 2. Install GitOps Operator from Operator Hub (Default Installation)
-3. Give ArgoCD permissions on `webmethods` namespace(project) `kubectl apply argo-config/argocd-config.yaml`
-4. Get ArgoCD admin password `kubectl get secret openshift-gitops-cluster -n openshift-gitops -o jsonpath='{.data.admin\.password}' | base64 -d`
+3. Get ArgoCD admin password `kubectl get secret openshift-gitops-cluster -n openshift-gitops -o jsonpath='{.data.admin\.password}' | base64 -d`
+4. Give ArgoCD permissions on `webmethods` namespace(project) `kubectl apply argo-config/argocd-config.yaml`
 5. Apply all configurations in the `argo-config` folder `kubectl apply -f argo-config/`
 
 ## Deploy using ArgoCD and Helm from IBM [Chart Repo](https://github.com/IBM/webmethods-helm-charts)
-1. Follow steps [here](#argo)  till step 4
+1. Follow steps [here](#argo)  till step 3
 2. `kubectl apply -f argo-config/1-argocd-config.yaml argo-config/2-argocd-project.yaml argo-config/3-argocd-repo.yaml` 
 3. `kubectl apply -f app-helm/service-account.yaml app-helm/argo-wm-msr.yaml`
 
